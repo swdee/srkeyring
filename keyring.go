@@ -141,7 +141,7 @@ func deriveHardMiniKey(key sr25519.DerivableKey, i []byte, cc [32]byte) (
 
 // Sign signs the message using the secret key
 func (k *KeyRing) Sign(msg []byte) (signature [64]byte, err error) {
-	sig, err := k.secret.Sign(signingContext(msg))
+	sig, err := k.secret.Sign(k.signingContext(msg))
 
 	if err != nil {
 		return signature, err
@@ -158,12 +158,12 @@ func (k *KeyRing) Verify(msg []byte, signature [64]byte) bool {
 		return false
 	}
 
-	return k.pub.Verify(sig, signingContext(msg))
+	return k.pub.Verify(sig, k.signingContext(msg))
 }
 
 // signingContext returns the transcript used for message signing
-func signingContext(msg []byte) *merlin.Transcript {
-	return sr25519.NewSigningContext([]byte("substrate"), msg)
+func (k *KeyRing) signingContext(msg []byte) *merlin.Transcript {
+	return sr25519.NewSigningContext([]byte(k.suri.Network), msg)
 }
 
 // Public returns the public key in raw bytes

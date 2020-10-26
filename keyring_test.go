@@ -326,8 +326,24 @@ var msgTests = []struct {
 		suri: "zebra extra skill occur rose muscle reveal robust cigar tilt jungle coral",
 		net:  NetSubstrate,
 		msg:  []byte("test message"),
-		sig:  "88f130b6837d5534ade5545ad8e31db6f3c5c4444cff12411d9812f51cb49836c13a0520dc95ae32848eb35a669428c77d4a28cfecdbf0d66cd21756d991c780",
+		sig:  "5e2da2d9b0aca37d3eed5c16d3882d01e664eb1a635d4fddbb79a4a584915e13d0346e48f6c6886b6d352953ad46864303acb6049e3201cc882b11367f31d98d",
 		ss58: "5DMASqMppiJJZtcSTibW9n6zMyZy71cxSrumEVwcxeFapGZs",
+	},
+	{
+		name: "Message 2",
+		suri: "road unhappy relief august shoulder dose identify switch ozone monster sniff label pool dizzy once latin bunker solve harvest eagle boring tank awesome museum",
+		net:  NetSubstrate,
+		msg:  []byte("hello over there"),
+		sig:  "8acbc31d06f93dd6aa009c00218238b5a154bd6fe688a7081543602a624f325348b86d1e9430d147d6e0d8633e4f6c6d86b25f6d8450a3c9a4381d4fa6558f83",
+		ss58: "5DLnV45a5qTUdetG1cQd6z6LF9HqJWsZepKXNcmTyXkUu6LX",
+	},
+	{
+		name: "Message 3",
+		suri: "occur myself unveil gun flight valid trash sail crack desk rhythm add//joe//account/1///pass1234",
+		net:  NetSubstrate,
+		msg:  []byte("10th planet"),
+		sig:  "d0084134a76d1fc912aa853537fadb93c89f6be59aecda97e231998cb524361124a50c6424bb6b172af5ed94f9de0e8f6bf61875626d52e6667f8a8fbc4f4984",
+		ss58: "5GUA4Uj57vh94fPcji4ctGsnQRY6dFHt1PdPE5YuSggscgpt",
 	},
 }
 
@@ -336,7 +352,7 @@ func TestSign(t *testing.T) {
 	for _, tt := range msgTests {
 		tt := tt // capture range variable
 		t.Run(tt.name, func(t *testing.T) {
-			//t.Parallel()
+			t.Parallel()
 
 			kr, err := KeyRingFromURI(tt.suri, tt.net)
 
@@ -359,7 +375,7 @@ func TestSign(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Error signing message: %v", err)
 			}
-fmt.Println("sig=", hex.EncodeToString(sig[:]))
+
 			if !kr.Verify(tt.msg, sig) {
 				t.Errorf("Error invalid signature for message")
 			}
@@ -372,15 +388,13 @@ func TestVerify(t *testing.T) {
 	for _, tt := range msgTests {
 		tt := tt // capture range variable
 		t.Run(tt.name, func(t *testing.T) {
-			//t.Parallel()
+			t.Parallel()
 
 			kr, err := KeyRingFromURI(tt.ss58, tt.net)
 
 			if err != nil {
 				t.Fatalf("Error generating key ring: %v", err)
 			}
-
-			fmt.Println("keyring=", kr.pub.Encode())
 
 			sig, err := hex.DecodeString(tt.sig)
 
@@ -398,120 +412,123 @@ func TestVerify(t *testing.T) {
 	}
 }
 
-// TestWalletSharing runs an integration test consisting of two parties, (i) the
-// wallet "Owner", and (ii) a "Website" with HD key to receive payments from.
-func TestWalletSharing(t *testing.T) {
+// TestKeyRingSharing runs an integration test consisting of two parties, (i) the
+// keyring "Owner", and (ii) a "Website" with HD key to receive payments from.
+func TestKeyRingSharing(t *testing.T) {
 
-	// get wallet parameters to use in this test
-	ownerParams, websiteParams, payParams := getWalletParams1()
+	tests := []struct {
+		name   string
+		params func() (owner, website, pay *keyRingParams)
+	}{
+		{
+			name:   "Params 1",
+			params: getKeyRingParams1,
+		},
+		{
+			name:   "Params 2",
+			params: getKeyRingParams2,
+		},
+	}
 
-	// create Owner master seed and wallet
-	ownerWallet, err := createWallet(ownerParams)
+	for _, tt := range tests {
+		tt := tt // capture range variable
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			owner, web, pay := tt.params()
+			commonKeyRingSharing(t, owner, web, pay)
+		})
+	}
+}
+
+// commonKeyRingSharing provides common functions to running multiple sharing
+// tests using different KeyRing parameters
+func commonKeyRingSharing(t *testing.T, ownerParams, websiteParams, payParams *keyRingParams) {
+
+	// create Owner master keyring
+	_, err := createKeyRing(ownerParams)
 
 	if err != nil {
 		t.Fatalf("Error generating Owner keyring: %v", err)
 	}
 
-	// owner then generates hard public key for Website to use
-	websiteWallet, err := createWallet(websiteParams)
+	// owner then generates hard key for Website to use
+	websiteKr, err := createKeyRing(websiteParams)
 
 	if err != nil {
 		t.Fatalf("Error generating Website keyring: %v", err)
 	}
 
-	// owner takes websiteWallet public key as ss58 address and shares that
+	// owner takes websiteKr public key as ss58 address and shares that
 	// with the Website administrator who generates a unique address to receive
 	// payment too
-	payWallet, err := createWallet(payParams)
+	payKr, err := createKeyRing(payParams)
 
 	if err != nil {
 		t.Fatalf("Error generating Payment keyring: %v", err)
 	}
 
-	payAddr, err := payWallet.SS58Address()
+	payAddr, err := payKr.SS58Address()
 
 	if err != nil {
 		t.Fatalf("Error generating Payment SS58 Address: %v", err)
 	}
 
-	fmt.Println("Payment address =", payAddr)
-
-	// can we claim funds from websiteWallet?
-	/*
-		claimSuri := fmt.Sprintf("%s/payment/42", websiteWallet.SecretHex())
-		claimWallet, err := KeyRingFromURI(claimSuri, NetSubstrate)
-
-		if err != nil {
-			t.Fatalf("Error generating Claim Wallet keyring: %v", err)
-		}
-	*/
-
-	return
-
-	// owner generates private and public keypair for the payment suri
-	// from the websiteWallet
-	websiteSeed := websiteWallet.SecretHex()
-	claimSuri := fmt.Sprintf("%s/payment/42", websiteSeed)
-	claimWallet, err := KeyRingFromURI(claimSuri, NetSubstrate)
-
-	if err != nil {
-		t.Fatalf("Error generating Claim Wallet keyring: %v", err)
+	if payAddr != payParams.ss58 {
+		t.Errorf("Invalid payment address, expected %v, got %v", payParams.ss58, payAddr)
 	}
 
-	claimSS58Addr, err := claimWallet.SS58Address()
+	// Using the websiteKr generate the pay address, which proves we can
+	// claim these funds
+	webSeedHex, err := websiteKr.SeedHex()
 
 	if err != nil {
-		t.Fatalf("Error generating Claim SS58 Address: %v", err)
+		t.Fatalf("Error getting Website wallet seed: %v", err)
 	}
 
-	fmt.Println("")
-	fmt.Println("claim suri=", claimSuri)
-	fmt.Println("claim priv key=", claimWallet.SecretHex())
-	fmt.Println("claim pub key=", claimWallet.PublicHex())
-	fmt.Println("Claim ss85 addr=", claimSS58Addr)
-
-	// owner claims using root mnemonic
-	ownerClaimSrui := fmt.Sprintf("%s//website/payment/42", ownerWallet.SecretHex())
-	ownerClaimWallet, err := KeyRingFromURI(ownerClaimSrui, NetSubstrate)
+	websiteClaimSuri := fmt.Sprintf(websiteParams.suriPath, webSeedHex)
+	websiteClaimWallet, err := KeyRingFromURI(websiteClaimSuri, NetSubstrate)
 
 	if err != nil {
-		t.Fatalf("Error generating Owner claim wallet keyring: %v", err)
+		t.Fatalf("Error generating Website claim keyring: %v", err)
 	}
 
-	ownerClaimSS58Addr, err := ownerClaimWallet.SS58Address()
+	websiteClaimAddr, err := websiteClaimWallet.SS58Address()
 
 	if err != nil {
-		t.Fatalf("Error generating Owner claim SS58 Address: %v", err)
+		t.Fatalf("Error generating Website claim SS58 Address: %v", err)
 	}
 
-	fmt.Println("")
-	fmt.Println("Owner claim suri=", ownerClaimSrui)
-	fmt.Println("Owner claim priv key=", ownerClaimWallet.SecretHex())
-	fmt.Println("Owner claim pub key=", ownerClaimWallet.PublicHex())
-	fmt.Println("Owner Claim ss85 addr=", ownerClaimSS58Addr)
+	if websiteClaimAddr != payParams.ss58 {
+		t.Errorf("Invalid Website claim address, expected %v, got %v", payParams.ss58, websiteClaimAddr)
+	}
 
-	// extra debug
-	debugWallet, err := KeyRingFromURI("ball salmon member claw ignore virus such fiber settle brain exact gasp//website/payment/42", NetSubstrate)
+	// Using the ownerKr generate the pay address, proving we can claim
+	// these funds
+	ownerClaimSuri := fmt.Sprintf(ownerParams.suriPath, ownerParams.seed)
+
+	ownerClaimWallet, err := KeyRingFromURI(ownerClaimSuri, NetSubstrate)
 
 	if err != nil {
-		t.Fatalf("Error generating debug Wallet keyring: %v", err)
+		t.Fatalf("Error generating Wwner claim keywring: %v", err)
 	}
 
-	debugSS58, err := debugWallet.SS58Address()
+	ownerClaimAddr, err := ownerClaimWallet.SS58Address()
 
 	if err != nil {
-		t.Fatalf("Error generating Debug SS58 Address: %v", err)
+		t.Fatalf("Error generating Wwner Claim SS58 Address: %v", err)
 	}
 
-	fmt.Println("")
-	fmt.Println("debug priv key=", debugWallet.SecretHex())
-	fmt.Println("debug pub key=", debugWallet.PublicHex())
-	fmt.Println("debug ss85 addr=", debugSS58)
-
+	if ownerClaimAddr != payParams.ss58 {
+		t.Errorf("Invalid Owner claim address, expected %v, got %v", payParams.ss58, ownerClaimAddr)
+	}
 }
 
-// walletParams define parameters for createWallet()
-type walletParams struct {
+// keyRingParams define parameters for createKeyRing()
+type keyRingParams struct {
+	// suriPath is the Sprintf format string to use for suri construction path
+	// for generating the claim/pay address
+	suriPath string
 	// suri is the SecretURI to generated wallet from
 	suri string
 	// net is the Network to use when generating wallet
@@ -524,37 +541,72 @@ type walletParams struct {
 	seed string
 }
 
-func getWalletParams1() (owner, website, pay *walletParams) {
+func getKeyRingParams1() (owner, website, pay *keyRingParams) {
 
-	owner = &walletParams{
-		suri:   "ball salmon member claw ignore virus such fiber settle brain exact gasp",
-		net:    NetSubstrate,
-		public: "0x74e547d29920767fc0eb797f184955f624fcc97a7e3e879b405be85eeee96903",
-		ss58:   "5EhyXFQ9KcD28jLMG92exuNciZcxBgbf78FVWrHh5YS5Czug",
-		seed:   "0xc9933cfd5062176aa69eae3bc584114a38139530d0de242dea6484a142b55f3a",
+	owner = &keyRingParams{
+		suriPath: "%s//website/payment/42",
+		suri:     "ball salmon member claw ignore virus such fiber settle brain exact gasp",
+		net:      NetSubstrate,
+		public:   "0x74e547d29920767fc0eb797f184955f624fcc97a7e3e879b405be85eeee96903",
+		ss58:     "5EhyXFQ9KcD28jLMG92exuNciZcxBgbf78FVWrHh5YS5Czug",
+		seed:     "0xc9933cfd5062176aa69eae3bc584114a38139530d0de242dea6484a142b55f3a",
 	}
 
-	website = &walletParams{
-		suri:   fmt.Sprintf("%s//website", owner.suri),
-		net:    NetSubstrate,
-		public: "0xf80241969be849eef0c50c11c54604197e3f119dbb61ee120737942c2cbae963",
-		ss58:   "5HftQKGjZUA5da11bw9fAK4cpTNWrKWEnbc91AgMMPyQtfxC",
-		seed:   "0x23d2ae93b27a340a94c286b5760e13435545664b87ee13c086a4ad1b4ce4c68a",
+	website = &keyRingParams{
+		suriPath: "%s/payment/42",
+		suri:     fmt.Sprintf("%s//website", owner.seed),
+		net:      NetSubstrate,
+		public:   "0xf80241969be849eef0c50c11c54604197e3f119dbb61ee120737942c2cbae963",
+		ss58:     "5HftQKGjZUA5da11bw9fAK4cpTNWrKWEnbc91AgMMPyQtfxC",
+		seed:     "0x23d2ae93b27a340a94c286b5760e13435545664b87ee13c086a4ad1b4ce4c68a",
 	}
 
-	pay = &walletParams{
-		suri:   fmt.Sprintf("%s/payment/42", website.ss58),
-		net:    NetSubstrate,
-		public: "0xc65f6a5657ecd41a3e83b2896d417a3a761239ce8039a98ccd6ec0d5e7a39431",
-		ss58:   "5GYogYb4JGK73JvjxHGtNGtWaPpnMPfd9eVGyyG5UrVc4mye",
-		seed:   "",
+	pay = &keyRingParams{
+		suriPath: "",
+		suri:     fmt.Sprintf("%s/payment/42", website.ss58),
+		net:      NetSubstrate,
+		public:   "0xc65f6a5657ecd41a3e83b2896d417a3a761239ce8039a98ccd6ec0d5e7a39431",
+		ss58:     "5GYogYb4JGK73JvjxHGtNGtWaPpnMPfd9eVGyyG5UrVc4mye",
+		seed:     "",
 	}
 
 	return
 }
 
-// createWallet with given parameters and test they match expected values
-func createWallet(p *walletParams) (*KeyRing, error) {
+func getKeyRingParams2() (owner, website, pay *keyRingParams) {
+
+	owner = &keyRingParams{
+		suriPath: "%s//website/payment/56",
+		suri:     "return adult session save cruise finger stem hotel food say grant muscle///pass1234",
+		net:      NetSubstrate,
+		public:   "0xf44d0f1186700b4d5e804086a5cac9abd568a23af4a00695251dc8893155ca21",
+		ss58:     "5Hb2S2UvbAALCmHKCdB7hZd6un8KF5qNbY4cwxaFiUuGuZMT",
+		seed:     "0x8577f977bd802723541d4b516f2afa1aea94301fbc2ba805bf8b0a4d37088871",
+	}
+
+	website = &keyRingParams{
+		suriPath: "%s/payment/56",
+		suri:     fmt.Sprintf("%s//website", owner.seed),
+		net:      NetSubstrate,
+		public:   "0xe694c3e4c07e43b882b2ff1e239a5b4407dfcbf1114c3ce8f13190d76708466b",
+		ss58:     "5HH34cf7E8S1oKqGDA5FGojqZXZSkxB3U9GChfEt6PEzVqKZ",
+		seed:     "0xd195124dd461d988720bb273c058c55a39bcb45adfe457178ac2f981c1c805e8",
+	}
+
+	pay = &keyRingParams{
+		suriPath: "",
+		suri:     fmt.Sprintf("%s/payment/56", website.ss58),
+		net:      NetSubstrate,
+		public:   "0x6a0b8913b41eb405f7e2461e014acfdf0e1ee756e127ea6b446e2e4501e7df17",
+		ss58:     "5ETkMpEd5Af7d3aMBpwNVv8sRa4Y1aRBvNSfycZq1ekWPGrN",
+		seed:     "",
+	}
+
+	return
+}
+
+// createKeyRing with given parameters and test they match expected values
+func createKeyRing(p *keyRingParams) (*KeyRing, error) {
 
 	wallet, err := KeyRingFromURI(p.suri, p.net)
 
