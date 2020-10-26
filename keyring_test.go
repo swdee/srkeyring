@@ -6,13 +6,16 @@ import (
 	"testing"
 )
 
+// Note: test vectors used are generated from the Rust implementation of
+// subkey v2.0.0 from command line
+// https://github.com/paritytech/substrate/tree/master/bin/utils/subkey
+
 const (
 	SeedNotAvailable = "_seed_not_available_"
 )
 
 func TestKeyRingFromURI(t *testing.T) {
 
-	// test vectors generated from rust implementation of subkey from command line
 	tests := []struct {
 		name   string
 		suri   string
@@ -313,6 +316,7 @@ func TestKeyRingFromURI(t *testing.T) {
 	}
 }
 
+// msgTests are vectors for signing and verifying message signatures
 var msgTests = []struct {
 	name string
 	suri string
