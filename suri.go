@@ -35,11 +35,10 @@ var (
 type PhraseType int
 
 const (
-	SecretHex PhraseType = iota +1
+	SecretHex PhraseType = iota + 1
 	SS58Public
 	Mnemonic
 )
-
 
 // SecretURI defines a struct consisting of the parts of a Secret URI
 type SecretURI struct {
@@ -47,11 +46,12 @@ type SecretURI struct {
 	Path     string
 	Password string
 	Network  Network
-	Type PhraseType
+	Type     PhraseType
 }
 
+// DerivablePrivateKey indicates if the returned sr25519.DerivableKey is a
+// PublicKey or SecretKey
 type DerivablePrivateKey bool
-
 
 // NewSecretURI takes a given string Secret URI and splits it into Phrase, Path,
 // and Password components given the format <phrase><path>///<password> and
@@ -114,12 +114,12 @@ func (s *SecretURI) DerivableKey() (sr25519.DerivableKey, DerivablePrivateKey, e
 			return nil, false, err
 		}
 
-		return  ms.ExpandEd25519(),  true, nil
+		return ms.ExpandEd25519(), true, nil
 
 	} else if raw, err := DecodeSS58Address(s.Phrase, s.Network, SS58Checksum); err == nil {
 		// ss58 encoded public address
 		s.Type = SS58Public
-		return sr25519.NewPublicKey(raw),  false, nil
+		return sr25519.NewPublicKey(raw), false, nil
 
 	} else {
 		// mnemonic word list
@@ -129,14 +129,8 @@ func (s *SecretURI) DerivableKey() (sr25519.DerivableKey, DerivablePrivateKey, e
 		if err != nil {
 			return nil, false, err
 		}
-		/*
-msSec := ms.Encode()
-fmt.Println("ms secret=",hex.EncodeToString(msSec[:]))
-sec := ms.ExpandEd25519()
-secEnc := sec.Encode()
-		fmt.Println("expanded secret=",hex.EncodeToString(secEnc[:]))
-*/
-		return  ms.ExpandEd25519(), true, nil
+
+		return ms.ExpandEd25519(), true, nil
 	}
 }
 
