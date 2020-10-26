@@ -161,7 +161,8 @@ func (k *KeyRing) Verify(msg []byte, signature [64]byte) bool {
 	return k.pub.Verify(sig, k.signingContext(msg))
 }
 
-// signingContext returns the transcript used for message signing
+// signingContext returns the transcript used for message signing for the
+// Network set
 func (k *KeyRing) signingContext(msg []byte) *merlin.Transcript {
 	return sr25519.NewSigningContext([]byte(k.suri.Network), msg)
 }

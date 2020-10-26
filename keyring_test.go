@@ -472,6 +472,7 @@ func commonKeyRingSharing(t *testing.T, ownerParams, websiteParams, payParams *k
 		t.Fatalf("Error generating Payment keyring: %v", err)
 	}
 
+	// the customer makes payment to the payAddr
 	payAddr, err := payKr.SS58Address()
 
 	if err != nil {

@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// HexPrefix defines
+// HexPrefix defines a prefix used in the hex encoded output
 type HexPrefix string
 
 const (
@@ -14,7 +14,7 @@ const (
 	SubstratePrefix HexPrefix = "0x"
 )
 
-// DecodeHex decodes the hex string to bytes and truncates any 0x prefix
+// DecodeHex decodes the hex string to bytes and truncates any prefix used
 func DecodeHex(str string, prefix HexPrefix) (seed []byte, ok bool) {
 
 	if strings.HasPrefix(str, string(prefix)) {
