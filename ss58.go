@@ -11,7 +11,7 @@ import (
 
 
 // ChecksumType represents the one or more checksum types.
-//More here: https://github.com/paritytech/substrate/wiki/External-Address-Format-(SS58)#checksum-types
+// More here: https://github.com/paritytech/substrate/wiki/External-Address-Format-(SS58)#checksum-types
 // TODO(ved): Maybe we can add these types to the known list ?
 type ChecksumType int
 
@@ -36,7 +36,7 @@ func SS58Address(addr [32]byte, net Network, ctype ChecksumType) (string, error)
 	return sS58AddressWithVersion(addr, version, ctype)
 }
 
-// SS58Address derives ss58 address from the address, network version, and checksumType
+// sS58AddressWithVersion derives ss58 address from the address, network version, and checksumType
 func sS58AddressWithVersion(addr [32]byte, version uint8, ctype ChecksumType) (string, error) {
 	var cbuf []byte
 	switch ctype {
@@ -79,9 +79,9 @@ func ss58Checksum(data []byte) ([]byte, error) {
 	return hasher.Sum(nil), nil
 }
 
-// DecodeSS58AddressWithVersion takes a string and checks if it is a validly
+// DecodeSS58Address takes a string and checks if it is a validly
 // encoded SS58 address and returns the raw address in bytes
-func DecodeSS58AddressWithVersion(addr string, net Network, ctype ChecksumType) ([32]byte, error) {
+func DecodeSS58Address(addr string, net Network, ctype ChecksumType) ([32]byte, error) {
 	var rawAddr [32]byte
 
 	// validate network version

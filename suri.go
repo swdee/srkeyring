@@ -116,7 +116,7 @@ func (s *SecretURI) DerivableKey() (sr25519.DerivableKey, DerivablePrivateKey, e
 
 		return  ms.ExpandEd25519(),  true, nil
 
-	} else if raw, err := DecodeSS58AddressWithVersion(s.Phrase, s.Network, SS58Checksum); err == nil {
+	} else if raw, err := DecodeSS58Address(s.Phrase, s.Network, SS58Checksum); err == nil {
 		// ss58 encoded public address
 		s.Type = SS58Public
 		return sr25519.NewPublicKey(raw),  false, nil
