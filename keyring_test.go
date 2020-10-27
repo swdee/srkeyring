@@ -703,13 +703,13 @@ func TestVrfSign(t *testing.T) {
 				t.Fatalf("SS58 Address does not match, expected %v, got %v", tt.ss58, ss58)
 			}
 
-			out, proof, err := kr.VrfSign(tt.msg)
+			out, proof, err := kr.VrfSign(kr.SigningContext(tt.msg))
 
 			if err != nil {
 				t.Fatalf("Error during VrfSign: %v", err)
 			}
 
-			valid, err := kr.VrfVerify(tt.msg, out, proof)
+			valid, err := kr.VrfVerify(kr.SigningContext(tt.msg), out, proof)
 
 			if err != nil {
 				t.Fatalf("Error during VrfVerify: %v", err)
@@ -752,7 +752,7 @@ func TestVrfVerify(t *testing.T) {
 			copy(outB[:], output)
 			copy(proofB[:], proof)
 
-			valid, err := kr.VrfVerify(tt.msg, outB, proofB)
+			valid, err := kr.VrfVerify(kr.SigningContext(tt.msg), outB, proofB)
 
 			if err != nil {
 				t.Fatalf("Error during VrfVerify: %v", err)

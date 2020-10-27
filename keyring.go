@@ -141,7 +141,7 @@ func deriveHardMiniKey(key sr25519.DerivableKey, i []byte, cc [32]byte) (
 
 // Sign signs the message using the secret key
 func (k *KeyRing) Sign(msg []byte) (signature [64]byte, err error) {
-	sig, err := k.secret.Sign(k.signingContext(msg))
+	sig, err := k.secret.Sign(k.SigningContext(msg))
 
 	if err != nil {
 		return signature, err
@@ -158,12 +158,12 @@ func (k *KeyRing) Verify(msg []byte, signature [64]byte) bool {
 		return false
 	}
 
-	return k.pub.Verify(sig, k.signingContext(msg))
+	return k.pub.Verify(sig, k.SigningContext(msg))
 }
 
-// signingContext returns the transcript used for message signing for the
+// SigningContext returns the transcript used for message signing for the
 // Network set
-func (k *KeyRing) signingContext(msg []byte) *merlin.Transcript {
+func (k *KeyRing) SigningContext(msg []byte) *merlin.Transcript {
 	return sr25519.NewSigningContext([]byte(k.suri.Network), msg)
 }
 
@@ -256,8 +256,8 @@ func (k *KeyRing) SeedHex() (string, error) {
 }
 
 // VrfSign creates a signed output and proof
-func (k *KeyRing) VrfSign(msg []byte) (output [32]byte, proof [64]byte, err error) {
-	out, prf, err := k.secret.VrfSign(k.signingContext(msg))
+func (k *KeyRing) VrfSign(t *merlin.Transcript) (output [32]byte, proof [64]byte, err error) {
+	out, prf, err := k.secret.VrfSign(t)
 
 	if err != nil {
 		return output, proof, err
@@ -268,11 +268,11 @@ func (k *KeyRing) VrfSign(msg []byte) (output [32]byte, proof [64]byte, err erro
 
 // VrfVerify verifies if the given proof and output are valid against the
 // public key
-func (k *KeyRing) VrfVerify(msg []byte, output [32]byte, proof [64]byte) (
+func (k *KeyRing) VrfVerify(t *merlin.Transcript, output [32]byte, proof [64]byte) (
 	bool, error) {
 
 	out := sr25519.NewOutput(output)
-	inout := out.AttachInput(k.pub, k.signingContext(msg))
+	inout := out.AttachInput(k.pub, t)
 
 	prf := new(sr25519.VrfProof)
 	err := prf.Decode(proof)
@@ -281,5 +281,5 @@ func (k *KeyRing) VrfVerify(msg []byte, output [32]byte, proof [64]byte) (
 		return false, err
 	}
 
-	return k.pub.VrfVerify(k.signingContext(msg), inout, prf)
+	return k.pub.VrfVerify(t, inout, prf)
 }
