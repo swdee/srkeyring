@@ -403,7 +403,7 @@ func TestVerify(t *testing.T) {
 			sig, err := hex.DecodeString(tt.sig)
 
 			if err != nil {
-				t.Fatalf("Error signing message: %v", err)
+				t.Fatalf("Invalid hex decode: %v", err)
 			}
 
 			var sigB [64]byte
@@ -647,4 +647,120 @@ func createKeyRing(p *keyRingParams) (*KeyRing, error) {
 	}
 
 	return wallet, nil
+}
+
+// vrfMsgTests are vectors for VRF signing and verifying of message proofs
+// output and proof fields generated from rust library using "seed"
+var vrfMsgTests = []struct {
+	name   string
+	suri   string
+	net    Network
+	msg    []byte
+	ss58   string
+	output string
+	proof  string
+}{
+	{
+		name:   "Message 1",
+		suri:   "zebra extra skill occur rose muscle reveal robust cigar tilt jungle coral",
+		net:    NetSubstrate,
+		msg:    []byte("test message"),
+		ss58:   "5DMASqMppiJJZtcSTibW9n6zMyZy71cxSrumEVwcxeFapGZs",
+		output: "9642ba293adcd5fa308f443fb110750dc2c83c67f4d8ed1738bdbd66345b1b4f",
+		proof:  "41fd3bee4394b0dceba0edc4dd835d1b80763cf5a2753b21012d8bf417c4a703aacbfe8649a49cac3690d17fa44be77bd9200978e235f40dd8351e91480cf400",
+	},
+	{
+		name:   "Message 2",
+		suri:   "glory still valve hair table canyon next ancient vacant hello viable record inside need keen column safe mixture pink cute over buffalo between glove//william//merchant//4",
+		net:    NetSubstrate,
+		msg:    []byte("setec astronomy"),
+		ss58:   "5C5dwTm9vKsZvCyLFPTw87TFFJ3CGsPN3D898YcSZBrB2aWF",
+		output: "e86d5dcddb950942573a459e58f4fc47c9d024dc77bd0a13e14b03f6ff027d7f",
+		proof:  "5f9fc4c101a15e6c66f16b72761a47a17fe68b3e2b568bfe884b476369d8a30a26d8b53bbc8340672246725b7f56dca2a94058dba84b299bb3873d0706c5f90c",
+	},
+}
+
+func TestVrfSign(t *testing.T) {
+
+	for _, tt := range vrfMsgTests {
+		tt := tt // capture range variable
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			kr, err := KeyRingFromURI(tt.suri, tt.net)
+
+			if err != nil {
+				t.Fatalf("Error generating key ring: %v", err)
+			}
+
+			ss58, err := kr.SS58Address()
+
+			if err != nil {
+				t.Fatalf("Error getting ss58 Address: %v", err)
+			}
+
+			if ss58 != tt.ss58 {
+				t.Fatalf("SS58 Address does not match, expected %v, got %v", tt.ss58, ss58)
+			}
+
+			out, proof, err := kr.VrfSign(tt.msg)
+
+			if err != nil {
+				t.Fatalf("Error during VrfSign: %v", err)
+			}
+
+			valid, err := kr.VrfVerify(tt.msg, out, proof)
+
+			if err != nil {
+				t.Fatalf("Error during VrfVerify: %v", err)
+			}
+
+			if !valid {
+				t.Errorf("Error invalid output and proof")
+			}
+		})
+	}
+}
+
+func TestVrfVerify(t *testing.T) {
+
+	for _, tt := range vrfMsgTests {
+		tt := tt // capture range variable
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			kr, err := KeyRingFromURI(tt.ss58, tt.net)
+
+			if err != nil {
+				t.Fatalf("Error generating key ring: %v", err)
+			}
+
+			output, err := hex.DecodeString(tt.output)
+
+			if err != nil {
+				t.Fatalf("Invalid hex decode for output: %v", err)
+			}
+
+			proof, err := hex.DecodeString(tt.proof)
+
+			if err != nil {
+				t.Fatalf("Invalid hex decode for proof: %v", err)
+			}
+
+			var outB [32]byte
+			var proofB [64]byte
+			copy(outB[:], output)
+			copy(proofB[:], proof)
+
+			valid, err := kr.VrfVerify(tt.msg, outB, proofB)
+
+			if err != nil {
+				t.Fatalf("Error during VrfVerify: %v", err)
+			}
+
+			if !valid {
+				t.Errorf("Error invalid output and proof")
+			}
+		})
+	}
 }

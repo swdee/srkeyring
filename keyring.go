@@ -254,3 +254,32 @@ func (k *KeyRing) SeedHex() (string, error) {
 	raw, err := k.Seed()
 	return EncodeHex(raw[:], k.suri.Network.AddressPrefix()), err
 }
+
+// VrfSign creates a signed output and proof
+func (k *KeyRing) VrfSign(msg []byte) (output [32]byte, proof [64]byte, err error) {
+	out, prf, err := k.secret.VrfSign(k.signingContext(msg))
+
+	if err != nil {
+		return output, proof, err
+	}
+
+	return out.Output().Encode(), prf.Encode(), nil
+}
+
+// VrfVerify verifies if the given proof and output are valid against the
+// public key
+func (k *KeyRing) VrfVerify(msg []byte, output [32]byte, proof [64]byte) (
+	bool, error) {
+
+	out := sr25519.NewOutput(output)
+	inout := out.AttachInput(k.pub, k.signingContext(msg))
+
+	prf := new(sr25519.VrfProof)
+	err := prf.Decode(proof)
+
+	if err != nil {
+		return false, err
+	}
+
+	return k.pub.VrfVerify(k.signingContext(msg), inout, prf)
+}
