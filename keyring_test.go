@@ -374,13 +374,13 @@ func TestSign(t *testing.T) {
 				t.Fatalf("SS58 Address does not match, expected %v, got %v", tt.ss58, ss58)
 			}
 
-			sig, err := kr.Sign(tt.msg)
+			sig, err := kr.Sign(kr.SigningContext(tt.msg))
 
 			if err != nil {
 				t.Fatalf("Error signing message: %v", err)
 			}
 
-			if !kr.Verify(tt.msg, sig) {
+			if !kr.Verify(kr.SigningContext(tt.msg), sig) {
 				t.Errorf("Error invalid signature for message")
 			}
 		})
@@ -409,7 +409,7 @@ func TestVerify(t *testing.T) {
 			var sigB [64]byte
 			copy(sigB[:], sig)
 
-			if !kr.Verify(tt.msg, sigB) {
+			if !kr.Verify(kr.SigningContext(tt.msg), sigB) {
 				t.Errorf("Error signature does not verify")
 			}
 		})
@@ -777,7 +777,7 @@ func BenchmarkSign(b *testing.B) {
 	b.ResetTimer()
 
 	for n := 0; n < b.N; n++ {
-		_, err := kr.Sign(msgTests[0].msg)
+		_, err := kr.Sign(kr.SigningContext(msgTests[0].msg))
 
 		if err != nil {
 			b.Fatalf("Error signing message: %v", err)
@@ -806,7 +806,7 @@ func BenchmarkVerify(b *testing.B) {
 	b.ResetTimer()
 
 	for n := 0; n < b.N; n++ {
-		_ = kr.Verify(msgTests[0].msg, sig)
+		_ = kr.Verify(kr.SigningContext(msgTests[0].msg), sig)
 	}
 }
 
