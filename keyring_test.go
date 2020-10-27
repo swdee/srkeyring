@@ -764,3 +764,110 @@ func TestVrfVerify(t *testing.T) {
 		})
 	}
 }
+
+func BenchmarkSign(b *testing.B) {
+	b.ReportAllocs()
+
+	kr, err := KeyRingFromURI(msgTests[0].suri, msgTests[0].net)
+
+	if err != nil {
+		b.Fatalf("Error generating Keyring: %v", err)
+	}
+
+	b.ResetTimer()
+
+	for n := 0; n < b.N; n++ {
+		_, err := kr.Sign(msgTests[0].msg)
+
+		if err != nil {
+			b.Fatalf("Error signing message: %v", err)
+		}
+	}
+}
+
+func BenchmarkVerify(b *testing.B) {
+	b.ReportAllocs()
+
+	kr, err := KeyRingFromURI(msgTests[0].ss58, msgTests[0].net)
+
+	if err != nil {
+		b.Fatalf("Error generating Keyring: %v", err)
+	}
+
+	raw, err := hex.DecodeString(msgTests[0].sig)
+
+	if err != nil {
+		b.Fatalf("Error decoding hex signature: %v", err)
+	}
+
+	var sig [64]byte
+	copy(sig[:], raw)
+
+	b.ResetTimer()
+
+	for n := 0; n < b.N; n++ {
+		_ = kr.Verify(msgTests[0].msg, sig)
+	}
+}
+
+func BenchmarkVrfSign(b *testing.B) {
+	b.ReportAllocs()
+
+	kr, err := KeyRingFromURI(vrfMsgTests[0].suri, vrfMsgTests[0].net)
+
+	if err != nil {
+		b.Fatalf("Error generating Keyring: %v", err)
+	}
+
+	t := kr.SigningContext(vrfMsgTests[0].msg)
+
+	b.ResetTimer()
+
+	for n := 0; n < b.N; n++ {
+		_, _, err := kr.VrfSign(t)
+
+		if err != nil {
+			b.Fatalf("Error signing message: %v", err)
+		}
+	}
+}
+
+func BenchmarkVrfVerify(b *testing.B) {
+	b.ReportAllocs()
+
+	kr, err := KeyRingFromURI(vrfMsgTests[0].suri, vrfMsgTests[0].net)
+
+	if err != nil {
+		b.Fatalf("Error generating Keyring: %v", err)
+	}
+
+	outraw, err := hex.DecodeString(vrfMsgTests[0].output)
+
+	if err != nil {
+		b.Fatalf("Error decoding hex output: %v", err)
+	}
+
+	var output [32]byte
+	copy(output[:], outraw)
+
+	proofraw, err := hex.DecodeString(vrfMsgTests[0].proof)
+
+	if err != nil {
+		b.Fatalf("Error decoding hex proof: %v", err)
+	}
+
+	var proof [64]byte
+	copy(proof[:], proofraw)
+
+	t := kr.SigningContext(vrfMsgTests[0].msg)
+
+	b.ResetTimer()
+
+	for n := 0; n < b.N; n++ {
+		_, err := kr.VrfVerify(t, output, proof)
+
+		if err != nil {
+			b.Fatalf("Error verifying message: %v", err)
+		}
+	}
+}
