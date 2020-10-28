@@ -35,7 +35,7 @@ func newJunction(part string) (*junction, error) {
 	u64, err := strconv.ParseUint(part, 10, 0)
 
 	if err == nil {
-		bc = make([]byte, 8, 8)
+		bc = make([]byte, 8)
 		binary.LittleEndian.PutUint64(bc, u64)
 
 	} else {

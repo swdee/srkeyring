@@ -50,7 +50,7 @@ func sS58AddressWithVersion(addr [32]byte, version uint8, ctype ChecksumType) (s
 		return "", fmt.Errorf("unknown checksum type: %v", ctype)
 	}
 
-	cs, err := ss58Checksum(append(cbuf))
+	cs, err := ss58Checksum(cbuf)
 
 	if err != nil {
 		return "", err
