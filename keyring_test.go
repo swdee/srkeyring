@@ -14,7 +14,7 @@ const (
 	SeedNotAvailable = "_seed_not_available_"
 )
 
-func TestKeyRingFromURI(t *testing.T) {
+func TestFromURI(t *testing.T) {
 
 	tests := []struct {
 		name   string
@@ -284,7 +284,7 @@ func TestKeyRingFromURI(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			kr, err := KeyRingFromURI(tt.suri, tt.net)
+			kr, err := FromURI(tt.suri, tt.net)
 
 			if err != nil {
 				if !tt.valid {
@@ -358,7 +358,7 @@ func TestSign(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			kr, err := KeyRingFromURI(tt.suri, tt.net)
+			kr, err := FromURI(tt.suri, tt.net)
 
 			if err != nil {
 				t.Fatalf("Error generating key ring: %v", err)
@@ -394,7 +394,7 @@ func TestVerify(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			kr, err := KeyRingFromURI(tt.ss58, tt.net)
+			kr, err := FromURI(tt.ss58, tt.net)
 
 			if err != nil {
 				t.Fatalf("Error generating key ring: %v", err)
@@ -492,7 +492,7 @@ func commonKeyRingSharing(t *testing.T, ownerParams, websiteParams, payParams *k
 	}
 
 	websiteClaimSuri := fmt.Sprintf(websiteParams.suriPath, webSeedHex)
-	websiteClaimWallet, err := KeyRingFromURI(websiteClaimSuri, NetSubstrate)
+	websiteClaimWallet, err := FromURI(websiteClaimSuri, NetSubstrate)
 
 	if err != nil {
 		t.Fatalf("Error generating Website claim keyring: %v", err)
@@ -512,7 +512,7 @@ func commonKeyRingSharing(t *testing.T, ownerParams, websiteParams, payParams *k
 	// these funds
 	ownerClaimSuri := fmt.Sprintf(ownerParams.suriPath, ownerParams.seed)
 
-	ownerClaimWallet, err := KeyRingFromURI(ownerClaimSuri, NetSubstrate)
+	ownerClaimWallet, err := FromURI(ownerClaimSuri, NetSubstrate)
 
 	if err != nil {
 		t.Fatalf("Error generating Wwner claim keywring: %v", err)
@@ -613,7 +613,7 @@ func getKeyRingParams2() (owner, website, pay *keyRingParams) {
 // createKeyRing with given parameters and test they match expected values
 func createKeyRing(p *keyRingParams) (*KeyRing, error) {
 
-	wallet, err := KeyRingFromURI(p.suri, p.net)
+	wallet, err := FromURI(p.suri, p.net)
 
 	if err != nil {
 		return nil, fmt.Errorf("Error generating Owner keyring: %w", err)
@@ -687,7 +687,7 @@ func TestVrfSign(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			kr, err := KeyRingFromURI(tt.suri, tt.net)
+			kr, err := FromURI(tt.suri, tt.net)
 
 			if err != nil {
 				t.Fatalf("Error generating key ring: %v", err)
@@ -729,7 +729,7 @@ func TestVrfVerify(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			kr, err := KeyRingFromURI(tt.ss58, tt.net)
+			kr, err := FromURI(tt.ss58, tt.net)
 
 			if err != nil {
 				t.Fatalf("Error generating key ring: %v", err)
@@ -768,7 +768,7 @@ func TestVrfVerify(t *testing.T) {
 func BenchmarkSign(b *testing.B) {
 	b.ReportAllocs()
 
-	kr, err := KeyRingFromURI(msgTests[0].suri, msgTests[0].net)
+	kr, err := FromURI(msgTests[0].suri, msgTests[0].net)
 
 	if err != nil {
 		b.Fatalf("Error generating Keyring: %v", err)
@@ -788,7 +788,7 @@ func BenchmarkSign(b *testing.B) {
 func BenchmarkVerify(b *testing.B) {
 	b.ReportAllocs()
 
-	kr, err := KeyRingFromURI(msgTests[0].ss58, msgTests[0].net)
+	kr, err := FromURI(msgTests[0].ss58, msgTests[0].net)
 
 	if err != nil {
 		b.Fatalf("Error generating Keyring: %v", err)
@@ -813,7 +813,7 @@ func BenchmarkVerify(b *testing.B) {
 func BenchmarkVrfSign(b *testing.B) {
 	b.ReportAllocs()
 
-	kr, err := KeyRingFromURI(vrfMsgTests[0].suri, vrfMsgTests[0].net)
+	kr, err := FromURI(vrfMsgTests[0].suri, vrfMsgTests[0].net)
 
 	if err != nil {
 		b.Fatalf("Error generating Keyring: %v", err)
@@ -835,7 +835,7 @@ func BenchmarkVrfSign(b *testing.B) {
 func BenchmarkVrfVerify(b *testing.B) {
 	b.ReportAllocs()
 
-	kr, err := KeyRingFromURI(vrfMsgTests[0].suri, vrfMsgTests[0].net)
+	kr, err := FromURI(vrfMsgTests[0].suri, vrfMsgTests[0].net)
 
 	if err != nil {
 		b.Fatalf("Error generating Keyring: %v", err)

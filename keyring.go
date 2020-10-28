@@ -31,8 +31,8 @@ type KeyRing struct {
 	hasSeed bool
 }
 
-// KeyRingFromURI returns a KeyRing from the given Secret URI
-func KeyRingFromURI(str string, net Network) (*KeyRing, error) {
+// FromURI returns a KeyRing from the given Secret URI
+func FromURI(str string, net Network) (*KeyRing, error) {
 
 	var err error
 
