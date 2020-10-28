@@ -22,13 +22,47 @@ Go v1.13 or newer
 go get -u https://github.com/swdee/srkeyring
 ```
 
-## Example
+## Examples
 
-Create KeyRing (Private and Public keys) from Secret URI, output public SS58
+**Note:** In the following examples error handling is ignored for brevity.
+
+
+### New KeyRing
+
+Generate new KeyRing (Private and Public keys) from randomly generated Mnemonic 
+of specified word count.
+
+```go
+package main
+
+import (
+    "github.com/swdee/srkeyring"  
+    "log"    
+)
+
+func main() {
+    // generate keyring with random 12 word mnemonic
+    kr, _ := srkeyring.Generate(12, srkeyring.NetSubstrate)
+
+    // output keyring details
+    mnemonic, _ := kr.Mnemonic()
+    seed, _ := kr.SeedHex()
+    pub := kr.PublicHex()
+    ss58, _ := kr.SS58Address()  
+
+    log.Printf("Mnemonic Phrase: %s", mnemonic)
+    log.Printf("Seed: %s", seed)
+    log.Printf("Public Key: %x", pub)
+    log.Printf("SS58 Address: %s", ss58)
+}
+```
+
+
+### KeyRing from Secret URI with Signing 
+
+Create KeyRing from Secret URI, output public SS58
 address, and sign message.  Verification of signature is performed from KeyRing
 generated from public SS58 formatted address.
-
-Note: Error handling is ignored for brevity.
 
 ```go
 package main
@@ -62,10 +96,70 @@ func main() {
 }
 ```
 
-A more complex example consisting of multiple
-parties who create a root KeyRing from which Hard and Soft keys are
-derived to setup a controller child KeyRing with granchild public payment 
-addresses for a website ecommerce site is shown in test code *TODO LINK*.  
+### Hard/Soft Key Derivation
+
+A more complex example uses Hard and Soft key derivation for generating 
+a Master KeyRing from which Child KeyRing's are created.  This enables the 
+following type of scenario;
+
+- Master KeyRing is held by company executives and enables them to control
+all Child and GrandChild keys.
+- Child KeyRing is generated from Master KeyRing and given to the Website Development
+department of a Company, enabling them to control all GrandChild keys.
+- GrandChild KeyRing is created from Child KeyRing public address to create unique
+addresses to receive payments on the companies ecommerce website. 
+
+This hierarchical structure provides privilege separation within the company. 
+Only public keys are present on the website servers, so no 
+private keys are recoverable if the server infrastructure is hacked.  The Website
+Development department only has control over GrandChild keys under its department
+and no other departments Child keys within the company. 
+   
+
+```go
+package main
+
+import (
+    "github.com/swdee/srkeyring"  
+    "log"    
+    "fmt"
+)
+
+func main() {
+    // generate master keyring with random 24 word mnemonic
+    masterKr, _ := srkeyring.Generate(24, srkeyring.NetSubstrate)
+    masterMnemonic, _ := masterKr.Mnemonic()
+
+    // generate child keyring for website development department using Hard key
+    childUri := fmt.Sprintf("%s//webdev", masterMnemonic) 
+    childKr, _ := srkeyring.FromURI(childUri, srkeyring.NetSubstrate)
+
+    // seed from child keyring is provided to website development department
+    // if you would like them to have control over grandchild keyring's
+    webdevSeed, _ := childKr.SeedHex()
+
+    // if no control is to be given to website development department then only
+    // provide the child KeyRing's public SS58 address
+    webdevSS58, _ := childKr.SS58Address()
+
+    // website is configured to generate unique addresses through grandchild keys
+    // to receive payment from the child keyring's public ss58 address using
+    // a Soft key
+    payUri := fmt.Sprintf("%s/payment/42", webdevSS58)
+    payKr, _ := srkeyring.FromURI(payUri, srkeyring.NetSubstrate)
+
+    // payment address is given to customer
+    payAddr, _ := payKr.SS58Address()
+
+    // the website development department can then generate the payment address
+    // using Secret URI
+    webdevClaimUri := fmt.Sprintf("%s/payment/42", webdevSeed)
+
+    // payment address can be generated from master keyring using Secret URI 
+    masterClaimUri := fmt.Sprintf("%s//webdev/payment/42", masterMnemonic)
+}
+```
+ 
 
 ## Benchmark
 
