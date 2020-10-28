@@ -97,6 +97,6 @@ with the following enhancements and changes.
 - Convenience functions to output Public and Secret keys hex encoded
 - Functions to access KeyRing Seed bytes
 - Added VRF (Verifiable Random Function) Signing and Verifying
-
+- Implemented new random KeyRing generation
 
 

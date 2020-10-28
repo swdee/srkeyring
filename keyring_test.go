@@ -3,6 +3,7 @@ package srwallet
 import (
 	"encoding/hex"
 	"fmt"
+	"strings"
 	"testing"
 )
 
@@ -869,5 +870,143 @@ func BenchmarkVrfVerify(b *testing.B) {
 		if err != nil {
 			b.Fatalf("Error verifying message: %v", err)
 		}
+	}
+}
+
+func TestMnemonic(t *testing.T) {
+
+	tests := []struct {
+		name   string
+		phrase string
+		ptype  PhraseType
+		net    Network
+		valid  bool
+	}{
+		{
+			name:   "Mnemonic as Phrase",
+			phrase: "zebra extra skill occur rose muscle reveal robust cigar tilt jungle coral",
+			ptype:  Mnemonic,
+			net:    NetSubstrate,
+			valid:  true,
+		},
+		{
+			name:   "Secret Hex as Phrase",
+			phrase: "0x7202a4eba69bb283e8e9a3f5f6f0fc64bb02e6d20fb4b6bde13caec148f2cca7",
+			ptype:  SecretHex,
+			net:    NetSubstrate,
+			valid:  false,
+		},
+		{
+			name:   "SS58 Address as Phrase",
+			phrase: "5GmkK1KwzDR5NMqxeAaTKDLXhym8QJ3pu8RsjxVaEGAxVsAo",
+			ptype:  SS58Public,
+			net:    NetSubstrate,
+			valid:  false,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt // capture range variable
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			kr, err := FromURI(tt.phrase, tt.net)
+
+			if err != nil {
+				t.Fatalf("Error generating KeyRing: %v", err)
+			}
+
+			_, err = kr.Mnemonic()
+
+			if tt.valid {
+				if err != nil {
+					t.Errorf("Expected valid mnemoinc, but got error: %v", err)
+				}
+
+			} else {
+				// !valid
+				if err == nil {
+					t.Errorf("Expected error non mnemonic phrase, but returned successfully")
+				}
+			}
+		})
+	}
+}
+
+func TestGenerate(t *testing.T) {
+
+	tests := []struct {
+		name  string
+		wcnt  WordCount
+		net   Network
+		valid bool
+	}{
+		{
+			name:  "Word count 12",
+			wcnt:  12,
+			net:   NetSubstrate,
+			valid: true,
+		},
+		{
+			name:  "Word count 15",
+			wcnt:  15,
+			net:   NetSubstrate,
+			valid: true,
+		},
+		{
+			name:  "Word count 18",
+			wcnt:  18,
+			net:   NetSubstrate,
+			valid: true,
+		},
+		{
+			name:  "Word count 21",
+			wcnt:  21,
+			net:   NetSubstrate,
+			valid: true,
+		},
+		{
+			name:  "Word count 24",
+			wcnt:  24,
+			net:   NetSubstrate,
+			valid: true,
+		},
+		{
+			name:  "Word count out of range",
+			wcnt:  15,
+			net:   NetSubstrate,
+			valid: false,
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt // capture range variable
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			kr, err := Generate(tt.wcnt, tt.net)
+
+			if err != nil {
+				if !tt.valid {
+					// error expected
+					return
+				}
+
+				t.Fatalf("Error generating KeyRing: %v", err)
+			}
+
+			// check generated mnemonic has required number of words
+			nem, err := kr.Mnemonic()
+
+			if err != nil {
+				t.Fatalf("Error getting mnemonic phrase: %v", err)
+			}
+
+			words := strings.Split(nem, " ")
+
+			if len(words) != int(tt.wcnt) {
+				t.Errorf("Mnemonic phrase has wrong number of words, expected %d, got %d", int(tt.wcnt), len(words))
+			}
+		})
 	}
 }
