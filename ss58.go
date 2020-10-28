@@ -24,14 +24,7 @@ const (
 
 // SS58Address derives ss58 address from the address, network, and checksumType
 func SS58Address(addr [32]byte, net Network, ctype ChecksumType) (string, error) {
-
-	version, err := GetNetworkVersion(net)
-
-	if err != nil {
-		return "", err
-	}
-
-	return sS58AddressWithVersion(addr, version, ctype)
+	return sS58AddressWithVersion(addr, net.Version(), ctype)
 }
 
 // sS58AddressWithVersion derives ss58 address from the address, network version, and checksumType
@@ -93,12 +86,7 @@ func DecodeSS58Address(addr string, net Network, ctype ChecksumType) ([32]byte, 
 	var rawAddr [32]byte
 
 	// validate network version
-	version, err := GetNetworkVersion(net)
-
-	if err != nil {
-		return rawAddr, err
-	}
-
+	version := net.Version()
 	versionBytes := []byte{version}
 	versionLen := len(versionBytes)
 

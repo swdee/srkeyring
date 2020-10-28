@@ -58,13 +58,6 @@ type DerivablePrivateKey bool
 // returns it as a struct
 func NewSecretURI(suri string, net Network) (*SecretURI, error) {
 
-	// validate network option
-	_, err := GetNetworkVersion(net)
-
-	if err != nil {
-		return nil, err
-	}
-
 	data := &SecretURI{
 		Network: net,
 	}

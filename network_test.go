@@ -2,25 +2,21 @@ package srwallet
 
 import "testing"
 
-func TestGetNetworkVersion(t *testing.T) {
+func TestNetSubstrate(t *testing.T) {
 
 	tests := []struct {
-		name     string
-		net      Network
-		expected uint8
-		valid    bool
+		name    string
+		net     Network
+		version uint8
+		prefix  HexPrefix
+		netname string
 	}{
 		{
-			name:     "Substrate",
-			net:      NetSubstrate,
-			expected: 42,
-			valid:    true,
-		},
-		{
-			name:     "Invalid Network",
-			net:      "TheForce",
-			expected: 0,
-			valid:    false,
+			name:    "Substrate",
+			net:     NetSubstrate{},
+			version: 42,
+			prefix:  "0x",
+			netname: "substrate",
 		},
 	}
 
@@ -29,47 +25,20 @@ func TestGetNetworkVersion(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			res, err := GetNetworkVersion(tt.net)
+			ver := tt.net.Version()
+			name := tt.net.Name()
+			prefix := tt.net.AddressPrefix()
 
-			if err != nil && tt.valid {
-				t.Fatalf("Error getting Network version: %v", err)
+			if ver != tt.version {
+				t.Errorf("Wrong network version, expected %v, got %v", tt.version, ver)
 			}
 
-			if res != tt.expected && err == nil {
-				t.Errorf("Wrong network version, expected %v, got %v", tt.expected, res)
+			if prefix != tt.prefix {
+				t.Errorf("Wrong address prefix, expected %v, got %v", tt.prefix, prefix)
 			}
-		})
-	}
-}
 
-func TestAddressPrefix(t *testing.T) {
-
-	tests := []struct {
-		name     string
-		net      Network
-		expected HexPrefix
-	}{
-		{
-			name:     "Substrate",
-			net:      NetSubstrate,
-			expected: SubstratePrefix,
-		},
-		{
-			name:     "Invalid Network",
-			net:      Network("NetInvalid"),
-			expected: NoPrefix,
-		},
-	}
-
-	for _, tt := range tests {
-		tt := tt // capture range variable
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			res := tt.net.AddressPrefix()
-
-			if res != tt.expected {
-				t.Errorf("Invalid address prefix, expected %v, got %v", tt.expected, res)
+			if name != tt.netname {
+				t.Errorf("Wrong network name, expected %v, got %v", tt.netname, name)
 			}
 		})
 	}

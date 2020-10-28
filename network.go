@@ -1,48 +1,38 @@
 package srwallet
 
-import "errors"
-
-// Network is the string name of the network
-type Network string
-
-const (
-	// Network is the network version to use
-	NetSubstrate Network = "substrate"
-)
-
-var (
-	// ErrUnknownNetwork error when network is not a known network
-	ErrUnknownNetwork = errors.New("Unknown Network")
-)
-
-// GetNetworkVersion takes a string network name and returns the version number
-func GetNetworkVersion(net Network) (uint8, error) {
-
-	kns := map[Network]uint8{
-		"substrate": 42,
-		"polkadot":  0,
-		"kusama":    2,
-		"dothereum": 20,
-		"kulupu":    16,
-		"edgeware":  7,
-	}
-
-	version, ok := kns[net]
-
-	if !ok {
-		return 0, ErrUnknownNetwork
-	}
-
-	return version, nil
+// Network defines the interface for a specific networks settings to be used
+// for key generation and address formatting
+type Network interface {
+	// Name returns the network name used in the KeyRing SigningContext transcript
+	Name() string
+	// Version returns the network version number used in SS58 address formatting
+	// see https://github.com/paritytech/substrate/wiki/External-Address-Format-(SS58)#checksum-types
+	// section Address Type
+	Version() uint8
+	// AddressPrefix returns a prefix to apply to hex encoded addresses for
+	// public key and private seed
+	AddressPrefix() HexPrefix
 }
 
-// AddressPrefix returns the HexPrefix for the given Network
-func (n Network) AddressPrefix() HexPrefix {
-	switch n {
-	case NetSubstrate:
-		return SubstratePrefix
+// force Substrate to implement Network interface
+var _ Network = &NetSubstrate{}
 
-	default:
-		return NoPrefix
-	}
+// NetSubstrate implements the Network interface to define Substrates mainnet
+// settings
+type NetSubstrate struct{}
+
+// Name returns the network name used in the KeyRing SigningContext transcript
+func (n NetSubstrate) Name() string {
+	return "substrate"
+}
+
+// Version returns the network version number used in SS58 address formatting
+func (n NetSubstrate) Version() uint8 {
+	return 42
+}
+
+// AddressPrefix returns a prefix to apply to hex encoded addresses for
+// public key and private seed
+func (n NetSubstrate) AddressPrefix() HexPrefix {
+	return "0x"
 }

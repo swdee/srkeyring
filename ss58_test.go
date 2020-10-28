@@ -15,14 +15,14 @@ var ss58tests = []struct {
 	{
 		name:  "Address 1",
 		addr:  "0x6a0b8913b41eb405f7e2461e014acfdf0e1ee756e127ea6b446e2e4501e7df17",
-		net:   NetSubstrate,
+		net:   NetSubstrate{},
 		ctype: SS58Checksum,
 		ss58:  "5ETkMpEd5Af7d3aMBpwNVv8sRa4Y1aRBvNSfycZq1ekWPGrN",
 	},
 	{
 		name:  "Address 2",
 		addr:  "0xf0ac9f380078d01605c538f67de4d9b14cab7bc50897e0377fccbbce277d4f40",
-		net:   NetSubstrate,
+		net:   NetSubstrate{},
 		ctype: SS58Checksum,
 		ss58:  "5HWGdRwMFAfm89MChot9sdfaSkpJciStmD4CMfqQHCNLHQqV",
 	},
