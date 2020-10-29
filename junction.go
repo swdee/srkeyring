@@ -64,4 +64,3 @@ func newJunction(part string) (*junction, error) {
 
 	return j, nil
 }
-
