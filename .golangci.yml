@@ -357,6 +357,7 @@ linters:
     - varcheck
     - gofmt
     - unused
+    - gosec
   #disable:
   #  - maligned
   #  - prealloc
