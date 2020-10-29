@@ -217,6 +217,18 @@ func (n NetPolkadot) Version() uint8 {
 func (n NetPolkadot) AddressPrefix() srkeyring.HexPrefix {
 	return "0x"
 }
+
+// ChecksumStart is the starting byte position of the blake2d checksum
+// calculated when generating the SS58 address checksum
+func (n NetPolkadot) ChecksumStart() int {
+	return 0
+}
+
+// ChecksumEnd is the end byte position of the blake2d checksum
+// calculated when generating the SS58 address checksum
+func (n NetPolkadot) ChecksumEnd() int {
+	return 2
+}
 ````
 
 ## Benchmark

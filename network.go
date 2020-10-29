@@ -12,6 +12,15 @@ type Network interface {
 	// AddressPrefix returns a prefix to apply to hex encoded addresses for
 	// public key and private seed
 	AddressPrefix() HexPrefix
+	// ChecksumStart is the starting byte position of the blake2d checksum
+	// calculated when generating the SS58 address checksum.  Valid ranges
+	// are 0 to 30.  Standard value is 0.
+	ChecksumStart() int
+	// ChecksumEnd is the end byte position of the blake2d checksum
+	// calculated when generating the SS58 address checksum.  Valid ranges
+	// are 2 to 32, where ChecksumEnd must be a higher number than
+	// ChecksumStart.  Standard value is 2.
+	ChecksumEnd() int
 }
 
 // force Substrate to implement Network interface
@@ -35,4 +44,16 @@ func (n NetSubstrate) Version() uint8 {
 // public key and private seed
 func (n NetSubstrate) AddressPrefix() HexPrefix {
 	return "0x"
+}
+
+// ChecksumStart is the starting byte position of the blake2d checksum
+// calculated when generating the SS58 address checksum
+func (n NetSubstrate) ChecksumStart() int {
+	return 0
+}
+
+// ChecksumEnd is the end byte position of the blake2d checksum
+// calculated when generating the SS58 address checksum
+func (n NetSubstrate) ChecksumEnd() int {
+	return 2
 }
