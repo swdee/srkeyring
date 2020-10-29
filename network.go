@@ -1,4 +1,4 @@
-package srwallet
+package srkeyring
 
 // Network defines the interface for a specific networks settings to be used
 // for key generation and address formatting

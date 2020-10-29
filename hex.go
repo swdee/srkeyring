@@ -1,4 +1,4 @@
-package srwallet
+package srkeyring
 
 import (
 	"encoding/hex"
