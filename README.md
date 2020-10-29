@@ -1,3 +1,9 @@
+
+<p align=center>
+[![Test Status](https://github.com/swdee/srkeyring/workflows/Test%20Code%20Matrix/badge.svg)](https://github.com/swdee/srkeyring/actions?query=workflow%3A%22Test+Code+Matrix%22)
+[![Lint Status](https://github.com/swdee/srkeyring/workflows/Lint%20Code/badge.svg)](https://github.com/swdee/srkeyring/actions?query=workflow%3A%22Lint+Code%22)
+</p>
+
 # srkeyring
 
 Provides Go functions for implementing HDKD (Hierarchical Deterministic Key Derivation) using
