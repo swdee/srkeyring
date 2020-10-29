@@ -1,4 +1,4 @@
-module dev.kpt.bz/tests/srwallet
+module github.com/swdee/srkeyring
 
 go 1.14
 
