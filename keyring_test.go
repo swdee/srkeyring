@@ -973,7 +973,7 @@ func TestGenerate(t *testing.T) {
 		},
 		{
 			name:  "Word count out of range",
-			wcnt:  15,
+			wcnt:  13,
 			net:   NetSubstrate{},
 			valid: false,
 		},
