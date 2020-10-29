@@ -1,11 +1,10 @@
-name: golangci-lint
+name: Test and Linter
 on: [push]
+
 jobs:
 
   build:
-    name: golangci-lint
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -20,4 +19,7 @@ jobs:
         run: curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin
 
       - name: Run golangci-lint
-        run: $(go env GOPATH)/bin/golangci-lint run
+        run: $(go env GOPATH)/bin/golangci-lint run -v
+
+      - name: Go test
+        run: go test -race
