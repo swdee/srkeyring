@@ -42,7 +42,7 @@ import (
 
 func main() {
     // generate keyring with random 12 word mnemonic
-    kr, _ := srkeyring.Generate(12, srkeyring.NetSubstrate)
+    kr, _ := srkeyring.Generate(12, srkeyring.NetSubstrate{})
 
     // output keyring details
     mnemonic, _ := kr.Mnemonic()
@@ -75,7 +75,7 @@ import (
 func main() {
     // generate keyring from 12 word mnemonic
     secretURI := "zebra extra skill occur rose muscle reveal robust cigar tilt jungle coral"
-    kr, _ := srkeyring.FromURI(secretURI, srkeyring.NetSubstrate)
+    kr, _ := srkeyring.FromURI(secretURI, srkeyring.NetSubstrate{})
 
     // output public SS58 formatted address
     ss58, _ := kr.SS58Address()  
@@ -86,7 +86,7 @@ func main() {
     sig, _ := kr.Sign(kr.SigningContext(msg))
         
     // create new keyring from SS58 public address to verify message signature
-    verkr, _ := srkeyring.FromURI(ss58, srkeyring.NetSubstrate)
+    verkr, _ := srkeyring.FromURI(ss58, srkeyring.NetSubstrate{})
     
     if !verkr.Verify(verkr.SigningContext(msg), sig) {
         log.Fatalf("Error invalid signature for message")
@@ -120,46 +120,104 @@ and no other departments Child keys within the company.
 package main
 
 import (
-    "github.com/swdee/srkeyring"  
-    "log"    
+    "github.com/swdee/srkeyring"     
     "fmt"
+    "log"
 )
 
 func main() {
-    // generate master keyring with random 24 word mnemonic
-    masterKr, _ := srkeyring.Generate(24, srkeyring.NetSubstrate)
-    masterMnemonic, _ := masterKr.Mnemonic()
+	// generate master keyring with random 24 word mnemonic
+	masterKr, _ := srkeyring.Generate(24, srkeyring.NetSubstrate{})
+	masterMnemonic, _ := masterKr.Mnemonic()
 
-    // generate child keyring for website development department using Hard key
-    childUri := fmt.Sprintf("%s//webdev", masterMnemonic) 
-    childKr, _ := srkeyring.FromURI(childUri, srkeyring.NetSubstrate)
+	// generate child keyring for website development department using Hard key
+	childUri := fmt.Sprintf("%s//webdev", masterMnemonic)
+	childKr, _ := srkeyring.FromURI(childUri, srkeyring.NetSubstrate{})
 
-    // seed from child keyring is provided to website development department
-    // if you would like them to have control over grandchild keyring's
-    webdevSeed, _ := childKr.SeedHex()
+	// seed from child keyring is provided to website development department
+	// if you would like them to have control over grandchild keyring's
+	webdevSeed, _ := childKr.SeedHex()
 
-    // if no control is to be given to website development department then only
-    // provide the child KeyRing's public SS58 address
-    webdevSS58, _ := childKr.SS58Address()
+	// if no control is to be given to website development department then only
+	// provide the child KeyRing's public SS58 address
+	webdevSS58, _ := childKr.SS58Address()
 
-    // website is configured to generate unique addresses through grandchild keys
-    // to receive payment from the child keyring's public ss58 address using
-    // a Soft key
-    payUri := fmt.Sprintf("%s/payment/42", webdevSS58)
-    payKr, _ := srkeyring.FromURI(payUri, srkeyring.NetSubstrate)
+	// website is configured to generate unique addresses through grandchild keys
+	// to receive payment from the child keyring's public ss58 address using
+	// a Soft key
+	payUri := fmt.Sprintf("%s/payment/42", webdevSS58)
+	payKr, _ := srkeyring.FromURI(payUri, srkeyring.NetSubstrate{})
 
-    // payment address is given to customer
-    payAddr, _ := payKr.SS58Address()
+	// payment address is given to customer
+	payAddr, _ := payKr.SS58Address()
 
-    // the website development department can then generate the payment address
-    // using Secret URI
-    webdevClaimUri := fmt.Sprintf("%s/payment/42", webdevSeed)
+	// the website development department can then generate the payment address
+	// using Secret URI
+	webdevClaimUri := fmt.Sprintf("%s/payment/42", webdevSeed)
 
-    // payment address can be generated from master keyring using Secret URI 
-    masterClaimUri := fmt.Sprintf("%s//webdev/payment/42", masterMnemonic)
+	// payment address can be generated from master keyring using Secret URI
+	masterClaimUri := fmt.Sprintf("%s//webdev/payment/42", masterMnemonic)
+
+	log.Printf("payAddr: %s", payAddr)
+	log.Printf("webdevClaimUri: \"%s\"", webdevClaimUri)
+	log.Printf("masterClaimUri: \"%s\"", masterClaimUri)
 }
 ```
  
+ 
+### Alternative Networks
+
+The library only implements key generation for the Substrate network, to generate
+keys for other networks such as Polkadot Mainnet implement the Network interface.
+
+
+```go
+package main
+
+import (
+	"github.com/swdee/srkeyring"
+	"log"
+)
+
+func main() {
+	// generate keyring with random 12 word mnemonic
+	kr, _ := srkeyring.Generate(12, NetPolkadot{})
+
+	// output keyring details
+	mnemonic, _ := kr.Mnemonic()
+	seed, _ := kr.SeedHex()
+	pub := kr.PublicHex()
+	ss58, _ := kr.SS58Address()
+
+	log.Printf("Mnemonic Phrase: %s", mnemonic)
+	log.Printf("Seed: %s", seed)
+	log.Printf("Public Key: %s", pub)
+	log.Printf("SS58 Address: %s", ss58)
+}
+
+// force NetPolkadot to implement Network interface
+var _ srkeyring.Network = &NetPolkadot{}
+
+// NetPolkadot implements the Network interface to define polkadots mainnet
+// settings
+type NetPolkadot struct{}
+
+// Name returns the network name used in the KeyRing SigningContext transcript
+func (n NetPolkadot) Name() string {
+	return "polkadot"
+}
+
+// Version returns the network version number used in SS58 address formatting
+func (n NetPolkadot) Version() uint8 {
+	return 0
+}
+
+// AddressPrefix returns a prefix to apply to hex encoded addresses for
+// public key and private seed
+func (n NetPolkadot) AddressPrefix() srkeyring.HexPrefix {
+	return "0x"
+}
+````
 
 ## Benchmark
 
@@ -192,5 +250,5 @@ with the following enhancements and changes.
 - Functions to access KeyRing Seed bytes
 - Added VRF (Verifiable Random Function) Signing and Verifying
 - Implemented new random KeyRing generation
-
+- Decoupled Network settings and implemented by interface
 
