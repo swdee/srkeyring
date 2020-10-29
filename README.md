@@ -1,10 +1,9 @@
+# srkeyring
 
-<p align="center">
+<p>
   <a href="https://github.com/swdee/srkeyring/actions?query=workflow%3A%22Test+Code+Matrix%22"><img src="https://github.com/swdee/srkeyring/workflows/Test%20Code%20Matrix/badge.svg"></a>
   <a href="https://github.com/swdee/srkeyring/actions?query=workflow%3A%22Lint+Code%22"><img src="https://github.com/swdee/srkeyring/workflows/Lint%20Code/badge.svg"></a>
 </p>
-
-# srkeyring
 
 Provides Go functions for implementing HDKD (Hierarchical Deterministic Key Derivation) using
 sr25519 (Schnorr over Ristretto25519) which is compatible with 
