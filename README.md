@@ -167,7 +167,7 @@ func main() {
  
 ### Alternative Networks
 
-The library only implements key generation for the Substrate network, to generate
+This library only implements key generation for the Substrate network, to generate
 keys for other networks such as Polkadot Mainnet implement the Network interface.
 
 
