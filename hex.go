@@ -9,11 +9,6 @@ import (
 // HexPrefix defines a prefix used in the hex encoded output
 type HexPrefix string
 
-const (
-	NoPrefix        HexPrefix = ""
-	SubstratePrefix HexPrefix = "0x"
-)
-
 // DecodeHex decodes the hex string to bytes and truncates any prefix used
 func DecodeHex(str string, prefix HexPrefix) (seed []byte, ok bool) {
 
