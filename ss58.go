@@ -122,7 +122,7 @@ func DecodeSS58Address(addr string, net Network, ctype ChecksumType) ([32]byte, 
 	}
 
 	// compare checksums
-	if !bytes.Equal(checksum, cs[0:2]) {
+	if !bytes.Equal(checksum, cs[net.ChecksumStart():net.ChecksumEnd()]) {
 		return rawAddr, fmt.Errorf("invalid checksum comparison")
 	}
 
