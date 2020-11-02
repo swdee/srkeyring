@@ -57,7 +57,7 @@ func main() {
 
     log.Printf("Mnemonic Phrase: %s", mnemonic)
     log.Printf("Seed: %s", seed)
-    log.Printf("Public Key: %x", pub)
+    log.Printf("Public Key: %s", pub)
     log.Printf("SS58 Address: %s", ss58)
 }
 ```
