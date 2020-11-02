@@ -53,10 +53,10 @@ var entropyWords = map[WordCount]entropyBits{
 
 // Generate creates a new KeyRing with a randomly created mnemonic of the
 // specified number of words
-func Generate(n WordCount, net Network) (*KeyRing, error) {
+func Generate(words int, net Network) (*KeyRing, error) {
 
 	// check word count is valid
-	bitsize, ok := entropyWords[n]
+	bitsize, ok := entropyWords[WordCount(words)]
 
 	if !ok {
 		return nil, ErrInvalidWordCount

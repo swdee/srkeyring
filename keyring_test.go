@@ -937,7 +937,7 @@ func TestGenerate(t *testing.T) {
 
 	tests := []struct {
 		name  string
-		wcnt  WordCount
+		wcnt  int
 		net   Network
 		valid bool
 	}{
