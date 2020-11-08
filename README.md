@@ -260,7 +260,7 @@ with the following enhancements and changes.
 - Decoding of SS58 Addresses to raw bytes
 - Unit testing across entire code based
 - Shifted overlap of Soft and Hard key derivation to upstream 
-  package [go-schnorrkel](github.com/ChainSafe/go-schnorrkel) in 
+  package [go-schnorrkel](https://github.com/ChainSafe/go-schnorrkel) in 
   [#PR19](https://github.com/ChainSafe/go-schnorrkel/pull/19)
 - Supports deriving child public keys from public SS58 address
 - Convenience functions to output Public and Secret keys hex encoded
