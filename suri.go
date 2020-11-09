@@ -38,6 +38,7 @@ const (
 	SecretHex PhraseType = iota + 1
 	SS58Public
 	Mnemonic
+	RawPublicKey
 )
 
 // SecretURI defines a struct consisting of the parts of a Secret URI

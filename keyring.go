@@ -78,6 +78,19 @@ func Generate(words int, net Network) (*KeyRing, error) {
 	return FromURI(mnemonic, net)
 }
 
+// FromPublic returns a KeyRing from the raw bytes of a public key
+func FromPublic(b [32]byte, net Network) (*KeyRing, error) {
+	kr := &KeyRing{
+		suri: &SecretURI{
+			Network: net,
+			Type:    RawPublicKey,
+		},
+		pub: sr25519.NewPublicKey(b),
+	}
+
+	return kr, nil
+}
+
 // FromURI returns a KeyRing from the given Secret URI
 func FromURI(str string, net Network) (*KeyRing, error) {
 
@@ -282,7 +295,7 @@ func (k *KeyRing) Seed() ([32]byte, error) {
 
 		return res, nil
 
-	case SS58Public:
+	case SS58Public, RawPublicKey:
 		return res, ErrSeedNotAvailable
 
 	case Mnemonic:

@@ -1010,3 +1010,53 @@ func TestGenerate(t *testing.T) {
 		})
 	}
 }
+
+func TestFromPublic(t *testing.T) {
+
+	tests := []struct {
+		name   string
+		public string
+		ss58   string
+		net    Network
+	}{
+		{
+			name:   "Public Key",
+			public: "0x38c9aaacbf915cdd41e91eb13d3921af7d478e8c9dea39d469805b0ad9c8ff75",
+			ss58:   "5DMASqMppiJJZtcSTibW9n6zMyZy71cxSrumEVwcxeFapGZs",
+			net:    NetSubstrate{},
+		},
+	}
+
+	for _, tt := range tests {
+		tt := tt // capture range variable
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			raw, ok := DecodeHex(tt.public, tt.net.AddressPrefix())
+
+			if !ok {
+				t.Fatalf("Error decoding raw public key bytes")
+			}
+
+			var rawB [32]byte
+			copy(rawB[:], raw)
+
+			kr, err := FromPublic(rawB, tt.net)
+
+			if err != nil {
+				t.Fatalf("Error creating KeyRing: %v", err)
+			}
+
+			ss58, err := kr.SS58Address()
+
+			if err != nil {
+				t.Fatalf("Unable to get SS58 Address: %v", err)
+			}
+
+			if ss58 != tt.ss58 {
+				t.Errorf("Unexpected SS58 Address, got %s, wanted %s", ss58, tt.ss58)
+			}
+
+		})
+	}
+}
