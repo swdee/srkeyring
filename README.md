@@ -237,7 +237,7 @@ func (n NetPolkadot) ChecksumStart() int {
 func (n NetPolkadot) ChecksumEnd() int {
 	return 2
 }
-````
+```
 
 ## Benchmark
 
