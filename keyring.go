@@ -1,12 +1,12 @@
 // Package srkeyring provides functions to implementation HDKD
 // (Hierarchical Deterministic Key Derivation) using sr25519
-// (Schnorr over Ristretto25519)
+// (Schnorr over Ristretto25519).
 //
-// Compatible with Substrates key generation and command line utility subkey
+// Compatible with Substrates key generation and command line utility subkey.
 //
 // Supports SS58 address formatting and SecretURI key derivation format
 // specified as;
-// `<mnemonic, mini-secret, or SS58 address>[//hard-derivation][/soft-derivation][///password]`
+// `<mnemonic, mini-secret, or SS58 address>[//hard-derivation][/soft-derivation][///password]`.
 package srkeyring
 
 import (
