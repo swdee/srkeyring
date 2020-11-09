@@ -3,6 +3,9 @@
 <p>
   <a href="https://github.com/swdee/srkeyring/actions?query=workflow%3A%22Test+Code+Matrix%22"><img src="https://github.com/swdee/srkeyring/workflows/Test%20Code%20Matrix/badge.svg"></a>
   <a href="https://github.com/swdee/srkeyring/actions?query=workflow%3A%22Lint+Code%22"><img src="https://github.com/swdee/srkeyring/workflows/Lint%20Code/badge.svg"></a>
+  <a href="https://goreportcard.com/report/github.com/swdee/srkeyring"><img src="https://goreportcard.com/badge/github.com/swdee/srkeyring"></a>
+  <a href="https://pkg.go.dev/github.com/swdee/srkeyring"><img src="https://camo.githubusercontent.com/7e01de2f4b5d78fbe66401da8620e9994c1fefc911f148ff156365c598efe656/68747470733a2f2f676f646f632e6f72672f6769746875622e636f6d2f79616e6777656e6d61692f686f772d746f2d6164642d62616467652d696e2d6769746875622d726561646d653f7374617475732e737667"></a>
+  <a href="https://github.com/swdee/srkeyring/blob/master/LICENSE"><img src="https://camo.githubusercontent.com/9423e485f95a30a3a942c41beb22bad27e02f699e78461492d6de6663317ecb6/68747470733a2f2f696d672e736869656c64732e696f2f6769746875622f6c6963656e73652f79616e6777656e6d61692f686f772d746f2d6164642d62616467652d696e2d6769746875622d726561646d652e7376673f6d61784167653d32353932303030"></a>
 </p>
 
 Provides Go functions for implementing HDKD (Hierarchical Deterministic Key Derivation) using
