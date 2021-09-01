@@ -27,7 +27,7 @@ Go v1.13 or newer
 ## Usage
 
 ```bash
-go get -u github.com/swdee/srkeyring
+go get github.com/swdee/srkeyring
 ```
 
 ## Examples
