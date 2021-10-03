@@ -89,15 +89,18 @@ func Generate(words int, net Network) (*KeyRing, error) {
 
 // FromPublic returns a KeyRing from the raw bytes of a public key
 func FromPublic(b [32]byte, net Network) (*KeyRing, error) {
+
+	pk, err := sr25519.NewPublicKey(b)
+
 	kr := &KeyRing{
 		suri: &SecretURI{
 			Network: net,
 			Type:    RawPublicKey,
 		},
-		pub: sr25519.NewPublicKey(b),
+		pub: pk,
 	}
 
-	return kr, nil
+	return kr, err
 }
 
 // FromURI returns a KeyRing from the given Secret URI
@@ -227,7 +230,13 @@ func (k *KeyRing) Verify(t *merlin.Transcript, signature [64]byte) bool {
 		return false
 	}
 
-	return k.pub.Verify(sig, t)
+	res, err := k.pub.Verify(sig, t)
+
+	if err != nil {
+		return false
+	}
+
+	return res
 }
 
 // SigningContext returns the transcript used for message signing for the
@@ -350,15 +359,18 @@ func (k *KeyRing) VrfSign(t *merlin.Transcript) (output [32]byte, proof [64]byte
 func (k *KeyRing) VrfVerify(t *merlin.Transcript, output [32]byte, proof [64]byte) (
 	bool, error) {
 
-	out := sr25519.NewOutput(output)
-	inout := out.AttachInput(k.pub, t)
-
-	prf := new(sr25519.VrfProof)
-	err := prf.Decode(proof)
+	out, err := sr25519.NewOutput(output)
 
 	if err != nil {
 		return false, err
 	}
 
-	return k.pub.VrfVerify(t, inout, prf)
+	prf := new(sr25519.VrfProof)
+	err = prf.Decode(proof)
+
+	if err != nil {
+		return false, err
+	}
+
+	return k.pub.VrfVerify(t, out, prf)
 }
