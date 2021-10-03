@@ -113,12 +113,13 @@ func (s *SecretURI) DerivableKey() (sr25519.DerivableKey, DerivablePrivateKey, e
 	} else if raw, err := DecodeSS58Address(s.Phrase, s.Network, SS58Checksum); err == nil {
 		// ss58 encoded public address
 		s.Type = SS58Public
-		return sr25519.NewPublicKey(raw), false, nil
+		pk, err := sr25519.NewPublicKey(raw)
+		return pk, false, err
 
 	} else {
 		// mnemonic word list
 		s.Type = Mnemonic
-		ms, err := sr25519.MiniSecretFromMnemonic(s.Phrase, s.Password)
+		ms, err := sr25519.MiniSecretKeyFromMnemonic(s.Phrase, s.Password)
 
 		if err != nil {
 			return nil, false, err
