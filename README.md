@@ -22,7 +22,7 @@ public address formatting.
 
 ## Requirements
 
-Go v1.13 or newer
+Go v1.14 or newer
 
 ## Usage
 
@@ -244,13 +244,18 @@ func (n NetPolkadot) ChecksumEnd() int {
 A comparison between regular Sign/Verify and VRF equivalents show the addition 
 overhead involved with the VRF scheme.
 
+Batch verification shows just over a 300% performance improvement versus 
+signature verfication performed in a loop.
+
 ```
 $ go test -bench=.
 
-BenchmarkSign-8             9520            142143 ns/op            1784 B/op         38 allocs/op
-BenchmarkVerify-8           6644            175140 ns/op            1408 B/op         30 allocs/op
-BenchmarkVrfSign-8          2770            429305 ns/op            2656 B/op         59 allocs/op
-BenchmarkVrfVerify-8        3753            319850 ns/op            5320 B/op         51 allocs/op
+BenchmarkBatchVerifier-8            1051           1182102 ns/op           29344 B/op          4 allocs/op
+BenchmarkBatchLoop-8                 336           3372077 ns/op           27360 B/op        600 allocs/op
+BenchmarkSign-8                    10719            115580 ns/op            1760 B/op         38 allocs/op
+BenchmarkVerify-8                   6034            189404 ns/op            1384 B/op         30 allocs/op
+BenchmarkVrfSign-8                  2835            410598 ns/op            2624 B/op         59 allocs/op
+BenchmarkVrfVerify-8                4272            291569 ns/op            5304 B/op         52 allocs/op
 ```
 
 
@@ -271,4 +276,5 @@ with the following enhancements and changes.
 - Added VRF (Verifiable Random Function) Signing and Verifying
 - Implemented new random KeyRing generation
 - Decoupled Network settings and implemented by interface
+- Batch signature verification
 
